@@ -5,6 +5,7 @@ type IUser interface {
 	GetAccount() string
 	GetPreUrl() string
 	GetPassword() string
+	GetCookie() string
 	UserInfo() (map[string]any, error) // 可获取用户参数（如userID、username）
 	CacheData() (map[string]any, error)
 }
@@ -15,5 +16,5 @@ type ICourse interface {
 }
 
 type ICourseList interface {
-	CourseList() ([]ICourse, error)
+	CourseList(user IUser) ([]ICourse, error)
 }

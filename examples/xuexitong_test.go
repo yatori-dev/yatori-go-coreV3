@@ -21,8 +21,11 @@ func TestLogin(t *testing.T) {
 		t.Error(err)
 	}
 	err = user.Login()
-	print(user.GetAccount())
+	courseList, err := user.CourseList()
 	if err != nil {
 		t.Error(err)
+	}
+	for _, course := range courseList {
+		t.Log(course.GetID(), course.GetName())
 	}
 }
