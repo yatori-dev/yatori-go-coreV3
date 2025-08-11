@@ -27,5 +27,6 @@ func TestLogin(t *testing.T) {
 	}
 	for _, course := range courseList {
 		t.Log(course.GetID(), course.GetName())
+		course.GetDetail()
 	}
 }

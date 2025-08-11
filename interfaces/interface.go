@@ -12,7 +12,14 @@ type IUser interface {
 
 type ICourse interface {
 	GetID() string
+	GetCourseID() string
 	GetName() string
+	GetDetail() []IDetail
+}
+
+type IDetail interface {
+	GetVideo()
+	GetWork()
 }
 
 type ICourseList interface {
