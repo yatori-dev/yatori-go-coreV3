@@ -76,15 +76,20 @@ func DetailApi(cookie string, cpi, key string) (string, error) {
 	return string(body), nil
 }
 
-func DetailPointStatusApi(cookie, clazzID, userID, cpi, courseID string, keyList []string) (string, error) {
+func DetailPointStatusApi(cookie, key, userID, cpi, courseID string, keyList []int) (string, error) {
 	method := "POST"
 
+	strInts := make([]string, len(keyList))
+	for i, v := range keyList {
+		strInts[i] = fmt.Sprintf("%d", v)
+	}
+
 	ts := time.Now().UnixNano() / 1000000
-	join := strings.Join(keyList, ",")
+	join := strings.Join(strInts, ",")
 	values := url.Values{
 		"view":     {"json"},
 		"nodes":    {join},
-		"clazzid":  {clazzID},
+		"clazzid":  {key},
 		"time":     {strconv.FormatInt(ts, 10)},
 		"userid":   {userID},
 		"cpi":      {cpi},

@@ -1,8 +1,10 @@
 package strategy
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/thedevsaddam/gojsonq"
 	"log"
 	"sort"
@@ -114,6 +116,14 @@ type KnowledgeItem struct {
 	PointFinished int
 }
 
+type ChapterPointDTO map[string]struct {
+	ClickCount    int `json:"clickcount"`    // 是否还有节点
+	FinishCount   int `json:"finishcount"`   // 已完成节点
+	TotalCount    int `json:"totalcount"`    // 总节点
+	OpenLock      int `json:"openlock"`      // 是否有锁
+	UnFinishCount int `json:"unfinishcount"` // 未完成节点
+}
+
 // NewXueXiTUserStrategy 创建策略实例（接收接口类型）
 func NewXueXiTUserStrategy(user interfaces.IUser) *XueXiTUserStrategy {
 	return &XueXiTUserStrategy{User: user}
@@ -150,6 +160,7 @@ func (x *XueXiTCourse) CourseList(user interfaces.IUser) ([]interfaces.ICourse, 
 			courseDataID int
 			classId      string
 			courseID     string
+			userID       string
 			courseImage  string
 		)
 
@@ -157,8 +168,7 @@ func (x *XueXiTCourse) CourseList(user interfaces.IUser) ([]interfaces.ICourse, 
 			teacher = v.Teacherfactor
 			courseName = v.Name
 			courseDataID = v.Id
-			userID := strings.Split(v.CourseSquareUrl, "userId=")[1]
-			x.UserID = userID
+			userID = strings.Split(v.CourseSquareUrl, "userId=")[1]
 			classId = strings.Split(strings.Split(v.CourseSquareUrl, "classId=")[1], "&userId")[0]
 			courseID = strings.Split(strings.Split(v.CourseSquareUrl, "courseId=")[1], "&personId")[0]
 			courseImage = v.Imageurl
@@ -168,6 +178,7 @@ func (x *XueXiTCourse) CourseList(user interfaces.IUser) ([]interfaces.ICourse, 
 			Cpi:           channel.Cpi,
 			Key:           classId,
 			CourseID:      courseID,
+			UserID:        userID,
 			ChatID:        channel.Content.Chatid,
 			CourseTeacher: teacher,
 			CourseName:    courseName,
@@ -203,6 +214,10 @@ func (x *XueXiTCourse) GetID() string {
 	return x.Key
 }
 
+func (x *XueXiTCourse) GetUserID() string {
+	return x.UserID
+}
+
 func (x *XueXiTCourse) GetCpi() string {
 	return strconv.Itoa(x.Cpi)
 }
@@ -216,6 +231,7 @@ func (x *XueXiTCourse) GetCourseID() string {
 }
 
 func (x *XueXiTCourse) GetDetail() []interfaces.IDetail {
+	var keyList []int
 	loglevel := log2.INFO
 	detail, err := xuexitong.DetailApi(x.cookie, strconv.Itoa(x.Cpi), x.Key)
 	if err != nil {
@@ -311,7 +327,45 @@ func (x *XueXiTCourse) GetDetail() []interfaces.IDetail {
 		return len(iLabelParts) < len(jLabelParts)
 	})
 	log2.Print(loglevel, "["+x.GetName()+"] "+"获取课程章节成功 (共 ", log2.Yellow, strconv.Itoa(len(x.Detail.Knowledge)), log2.Default, " 个) ")
+
+	for _, item := range x.Detail.Knowledge {
+		keyList = append(keyList, item.ID)
+	}
+	status, err := xuexitong.DetailPointStatusApi(x.cookie, x.Key, x.UserID, strconv.Itoa(x.Cpi), x.CourseID, keyList)
+	if err != nil || gojsonq.New().JSONString(status).Find("msg") == "用户不存在" {
+		log2.Print(loglevel, "["+x.GetName()+"] "+"["+x.GetID()+"] "+" PointStatus拉取失败"+status)
+		return nil
+	}
+	var cp ChapterPointDTO
+	if err := json.NewDecoder(bytes.NewReader([]byte(status))).Decode(&cp); err != nil {
+		log2.Print(loglevel, "failed to decode JSON response: %v", err)
+		return nil
+	}
+
+	for i := range x.Detail.Knowledge {
+		x.Detail.Knowledge[i].updatePointStatus(cp)
+	}
+	log2.Print(loglevel, "["+x.GetName()+"] "+"["+x.GetID()+"] "+" PointStatus更新成功")
+
 	return nil
+}
+
+// updatePointStatus 更新节点状态 单独对应ChaptersList每个KnowledgeItem
+func (c *KnowledgeItem) updatePointStatus(chapterPoint ChapterPointDTO) {
+	pointData, exists := chapterPoint[fmt.Sprintf("%d", c.ID)]
+	if !exists {
+		fmt.Printf("Chapter ID %d not found in API response\n", c.ID)
+		return
+	}
+	// 当存在未完成节点 Item 中Total 记录数为未完成数数量
+	// TotalCount == 0 没有节点 或者 属于顶级标签
+	// 两种条件都不符合 则 记录此章节总结点数量
+	if pointData.UnFinishCount != 0 && pointData.TotalCount == 0 {
+		c.PointTotal = pointData.UnFinishCount
+	} else {
+		c.PointTotal = pointData.TotalCount
+	}
+	c.PointFinished = pointData.FinishCount
 }
 
 func (n *XueXiTUserStrategy) Login() error {

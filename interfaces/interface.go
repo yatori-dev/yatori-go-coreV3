@@ -12,14 +12,17 @@ type IUser interface {
 
 type ICourse interface {
 	GetID() string
+	GetUserID() string
 	GetCourseID() string
 	GetName() string
 	GetDetail() []IDetail
 }
 
+// IDetail 课程详情 这里可能各种课程软件就会有很大的分歧
 type IDetail interface {
 	GetVideo()
 	GetWork()
+	Status()
 }
 
 type ICourseList interface {
