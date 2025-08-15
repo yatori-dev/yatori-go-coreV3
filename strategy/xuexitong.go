@@ -346,8 +346,28 @@ func (x *XueXiTCourse) GetDetail() []interfaces.IDetail {
 		x.Detail.Knowledge[i].updatePointStatus(cp)
 	}
 	log2.Print(loglevel, "["+x.GetName()+"] "+"["+x.GetID()+"] "+" PointStatus更新成功")
+	var details []interfaces.IDetail
+	for _, item := range x.Detail.Knowledge {
+		details = append(details, &item)
+	}
+	return details
+}
 
-	return nil
+func (k *KnowledgeItem) GetWork() {
+	// TODO 获取作业
+}
+
+func (k *KnowledgeItem) GetVideo() {
+	// TODO 获取视频
+}
+
+// Status 课程具体结构
+func (x *XueXiTCourse) Status() any {
+	return x
+}
+
+func (k *KnowledgeItem) StatusStruct() any {
+	return k
 }
 
 // updatePointStatus 更新节点状态 单独对应ChaptersList每个KnowledgeItem

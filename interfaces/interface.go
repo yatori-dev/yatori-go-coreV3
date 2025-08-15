@@ -22,7 +22,7 @@ type ICourse interface {
 type IDetail interface {
 	GetVideo()
 	GetWork()
-	Status()
+	StatusStruct() any
 }
 
 type ICourseList interface {

@@ -1,6 +1,7 @@
 package examples
 
 import (
+	"fmt"
 	"testing"
 	"yatori-go-coreV3/common"
 	"yatori-go-coreV3/global"
@@ -27,6 +28,11 @@ func TestLogin(t *testing.T) {
 	}
 	for _, course := range courseList {
 		t.Log(course.GetID(), course.GetName(), course.GetCourseID(), course.GetUserID())
-		course.GetDetail()
+		detail := course.GetDetail()
+		fmt.Println("detail:", detail)
+		for _, d := range detail {
+			status := d.StatusStruct()
+			fmt.Println("status:", status)
+		}
 	}
 }
