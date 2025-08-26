@@ -29,10 +29,12 @@ func TestLogin(t *testing.T) {
 	}
 	for _, course := range courseList {
 		t.Log(course.GetID(), course.GetName(), course.GetCourseID(), course.GetUserID())
+
 		detail := course.GetDetail()
-		fmt.Println("detail:", detail)
-		for _, d := range detail {
-			strategy.GetXKnowledgeItem(d.StatusStruct().Get())
+		xCourse := strategy.GetXCourse(course.StatusStruct().Get())
+		fmt.Println(len(detail))
+		for i, d := range detail {
+			println(strategy.GetXKnowledgeItem(d.StatusStruct().Get()).Fetch(*xCourse, i))
 		}
 	}
 }

@@ -231,7 +231,6 @@ func (x *XueXiTCourse) GetCourseID() string {
 }
 
 func (x *XueXiTCourse) GetDetail() []interfaces.IDetail {
-	var keyList []int
 	loglevel := log2.INFO
 	detail, err := xuexitong.DetailApi(x.cookie, strconv.Itoa(x.Cpi), x.Key)
 	if err != nil {
@@ -328,10 +327,10 @@ func (x *XueXiTCourse) GetDetail() []interfaces.IDetail {
 	})
 	log2.Print(loglevel, "["+x.GetName()+"] "+"获取课程章节成功 (共 ", log2.Yellow, strconv.Itoa(len(x.Detail.Knowledge)), log2.Default, " 个) ")
 
-	for _, item := range x.Detail.Knowledge {
-		keyList = append(keyList, item.ID)
-	}
+	keyList := x.GetKeyList()
+
 	status, err := xuexitong.DetailPointStatusApi(x.cookie, x.Key, x.UserID, strconv.Itoa(x.Cpi), x.CourseID, keyList)
+
 	if err != nil || gojsonq.New().JSONString(status).Find("msg") == "用户不存在" {
 		log2.Print(loglevel, "["+x.GetName()+"] "+"["+x.GetID()+"] "+" PointStatus拉取失败"+status)
 		return nil
@@ -360,12 +359,30 @@ func (k *KnowledgeItem) GetWork() {
 func (k *KnowledgeItem) GetVideo() {
 }
 
+func (x *XueXiTCourse) GetKeyList() []int {
+	var keyList []int
+
+	for _, item := range x.Detail.Knowledge {
+		keyList = append(keyList, item.ID)
+	}
+	return keyList
+}
+
+func (k *KnowledgeItem) Fetch(c XueXiTCourse, index int) string {
+
+	cords, err := xuexitong.FetchDetailCords(c.cookie, c.GetCourseID(), c.GetKeyList(), index)
+	if err != nil {
+		log2.Print(log2.DEBUG, "["+c.GetName()+"] "+"["+c.GetID()+"] "+" FetchDetailCords error: ", err)
+	}
+	return cords
+}
+
 // Status 课程具体结构
-func (x *XueXiTCourse) Status() any {
+func (x *XueXiTCourse) StatusStruct() interfaces.IGet {
 	return x
 }
 
-func (k *KnowledgeItem) StatusStruct() interfaces.IStatusStruct {
+func (k *KnowledgeItem) StatusStruct() interfaces.IGet {
 	return k
 }
 

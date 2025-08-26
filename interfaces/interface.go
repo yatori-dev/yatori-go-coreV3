@@ -18,16 +18,21 @@ type ICourse interface {
 	GetCourseID() string
 	GetName() string
 	GetDetail() []IDetail
+	IStatusStruct
 }
 
 // IDetail 课程详情 这里可能各种课程软件就会有很大的分歧
 type IDetail interface {
 	GetVideo()
 	GetWork()
-	StatusStruct() IStatusStruct
+	IStatusStruct
 }
 
 type IStatusStruct interface {
+	StatusStruct() IGet
+}
+
+type IGet interface {
 	Get() Str
 }
 
