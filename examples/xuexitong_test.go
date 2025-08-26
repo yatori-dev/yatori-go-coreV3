@@ -34,7 +34,7 @@ func TestLogin(t *testing.T) {
 		xCourse := strategy.GetXCourse(course.StatusStruct().Get())
 		fmt.Println(len(detail))
 		for i, d := range detail {
-			println(strategy.GetXKnowledgeItem(d.StatusStruct().Get()).Fetch(*xCourse, i))
+			println(strategy.GetXKnowledgeItem(d.StatusStruct().Get()).Fetch(user.GetCookie(), *xCourse, i))
 		}
 	}
 }

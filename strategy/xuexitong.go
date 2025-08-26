@@ -368,9 +368,9 @@ func (x *XueXiTCourse) GetKeyList() []int {
 	return keyList
 }
 
-func (k *KnowledgeItem) Fetch(c XueXiTCourse, index int) string {
+func (k *KnowledgeItem) Fetch(cookie string, c XueXiTCourse, index int) string {
 
-	cords, err := xuexitong.FetchDetailCords(c.cookie, c.GetCourseID(), c.GetKeyList(), index)
+	cords, err := xuexitong.FetchDetailCords(cookie, c.GetCourseID(), c.GetKeyList(), index)
 	if err != nil {
 		log2.Print(log2.DEBUG, "["+c.GetName()+"] "+"["+c.GetID()+"] "+" FetchDetailCords error: ", err)
 	}
