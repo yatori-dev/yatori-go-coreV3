@@ -112,8 +112,8 @@ type KnowledgeItem struct {
 	Layer         int           `json:"layer"`        // 节点层级
 	ParentNodeID  int           `json:"parentnodeid"` // 父节点 ID
 	Status        string        `json:"status"`       // 节点状态
-	PointTotal    int
-	PointFinished int
+	PointTotal    int           `json:"pointTotal"`
+	PointFinished int           `json:"pointFinished"`
 }
 
 type ChapterPointDTO map[string]struct {
@@ -358,7 +358,6 @@ func (k *KnowledgeItem) GetWork() {
 }
 
 func (k *KnowledgeItem) GetVideo() {
-	// TODO 获取视频
 }
 
 // Status 课程具体结构
@@ -366,8 +365,26 @@ func (x *XueXiTCourse) Status() any {
 	return x
 }
 
-func (k *KnowledgeItem) StatusStruct() any {
+func (k *KnowledgeItem) StatusStruct() interfaces.IStatusStruct {
 	return k
+}
+
+func (k *KnowledgeItem) Get() interfaces.Str {
+	marshal, err := json.Marshal(k)
+	if err != nil {
+		log2.Print(log2.DEBUG, "["+k.Name+"] "+"["+strconv.Itoa(k.ID)+"] "+" json.Marshal error: ", err)
+		return ""
+	}
+	return interfaces.Str(marshal)
+}
+
+func (x *XueXiTCourse) Get() interfaces.Str {
+	marshal, err := json.Marshal(x)
+	if err != nil {
+		log2.Print(log2.DEBUG, "["+x.CourseName+"] "+"["+x.GetID()+"] "+" json.Marshal error: ", err)
+		return ""
+	}
+	return interfaces.Str(marshal)
 }
 
 // updatePointStatus 更新节点状态 单独对应ChaptersList每个KnowledgeItem
@@ -435,4 +452,22 @@ func (n *XueXiTUserStrategy) GetCookie() string {
 
 func (n *XueXiTUserStrategy) GetPreUrl() string {
 	return n.User.GetPreUrl()
+}
+
+func GetXKnowledgeItem(s interfaces.Str) *KnowledgeItem {
+	var k KnowledgeItem
+	if err := json.Unmarshal([]byte(s), &k); err != nil {
+		log2.Print(log2.DEBUG, "json.Unmarshal error: ", err)
+		return nil
+	}
+	return &k
+}
+
+func GetXCourse(s interfaces.Str) *XueXiTCourse {
+	var c XueXiTCourse
+	if err := json.Unmarshal([]byte(s), &c); err != nil {
+		log2.Print(log2.DEBUG, "json.Unmarshal error: ", err)
+		return nil
+	}
+	return &c
 }

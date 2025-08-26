@@ -5,6 +5,7 @@ import (
 	"testing"
 	"yatori-go-coreV3/common"
 	"yatori-go-coreV3/global"
+	"yatori-go-coreV3/strategy"
 	"yatori-go-coreV3/yatori"
 )
 
@@ -31,8 +32,7 @@ func TestLogin(t *testing.T) {
 		detail := course.GetDetail()
 		fmt.Println("detail:", detail)
 		for _, d := range detail {
-			status := d.StatusStruct()
-			fmt.Println("status:", status)
+			strategy.GetXKnowledgeItem(d.StatusStruct().Get())
 		}
 	}
 }

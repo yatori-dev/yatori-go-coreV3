@@ -1,5 +1,7 @@
 package interfaces
 
+type Str string
+
 type IUser interface {
 	Login() error
 	GetAccount() string
@@ -22,7 +24,11 @@ type ICourse interface {
 type IDetail interface {
 	GetVideo()
 	GetWork()
-	StatusStruct() any
+	StatusStruct() IStatusStruct
+}
+
+type IStatusStruct interface {
+	Get() Str
 }
 
 type ICourseList interface {
